@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Build Assistant - PC Builder</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body class="bg-black text-warning">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand text-warning" href="index.html">PC Builder</a>
+        <button
+          class="navbar-toggler"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link text-warning" href="products.html">Products</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-warning" href="build-pc.html">Build PC</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-warning active" href="ai-build.html"
+                >AI Build</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-warning" href="services.html">Services</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-warning" href="orders.html">Orders</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-warning" href="cart.html">Cart</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <section class="container py-5">
+      <h2 class="text-center mb-4">AI Build Assistant</h2>
+
+      <div class="row">
+        <div class="col-md-8">
+          <div class="border border-warning rounded p-3 mb-3 chat-box" id="chatBox">
+            <div class="text-muted">AI: Hi! Tell me your budget and usage (e.g. gaming, editing, office)...</div>
+          </div>
+
+          <div class="input-group">
+            <input
+              type="text"
+              id="userInput"
+              class="form-control text-black"
+              placeholder="Type your message..."
+            />
+            <button id="voiceBtn" class="btn btn-outline-warning" title="Voice input" aria-label="Voice input">🎤</button>
+            <button id="sendBtn" class="btn btn-warning text-black" onclick="sendMessage()">Send</button>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="p-3 border border-warning rounded">
+            <h5>Cart Preview</h5>
+            <div id="cartPreview">No items added yet.</div>
+            <button id="addBuildBtn" class="btn btn-sm btn-warning text-black mt-3" disabled>Add Build to Cart</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer
+      class="bg-dark text-warning text-center py-3 border-top border-warning"
+    >
+      &copy; 2025 PC Builder. All Rights Reserved.
+    </footer>
+
+    <script>
+      const API_BASE = 'http://localhost:5001';
+      const DEMO_USER_ID = 1;
+      let currentSessionId = localStorage.getItem('ai_session_id') || null;
+      let currentBuild = null;
+
+      function currency(val){ return `₹${Math.round(val).toLocaleString('en-IN')}`; }
+
+      async function loadConversation(){
+        if(!currentSessionId) return;
+        try{
+          const res = await fetch(`${API_BASE}/api/ai/conversation/${currentSessionId}`);
+          const msgs = await res.json();
+          const chatBox = document.getElementById('chatBox');
+          for(const m of msgs){
+            const who = m.sender === 'user' ? 'You' : 'AI';
+            chatBox.innerHTML += `<div><strong>${who}:</strong> ${typeof m.message === 'string' ? m.message : JSON.stringify(m.message)}</div>`;
+          }
+        }catch {}
+      }
+
+      async function sendMessage(){
+        const input = document.getElementById('userInput');
+        const chatBox = document.getElementById('chatBox');
+        const sendBtn = document.getElementById('sendBtn');
+        const userMsg = input.value.trim();
+        if(!userMsg) return;
+        chatBox.innerHTML += `<div><strong>You:</strong> ${userMsg}</div>`;
+        input.value = '';
+        sendBtn.disabled = true;
+        chatBox.innerHTML += `<div class="text-muted" id="aiLoading">AI is thinking...</div>`;
+
+        try{
+          const res = await fetch(`${API_BASE}/api/ai/build-pc`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: userMsg, sessionId: currentSessionId, userId: DEMO_USER_ID })
+          });
+          const data = await res.json();
+          document.getElementById('aiLoading').remove();
+          currentSessionId = data.sessionId;
+          localStorage.setItem('ai_session_id', currentSessionId);
+          currentBuild = data;
+          const picks = data.picks || {};
+          const lines = Object.keys(picks).map(cat => {
+            const p = picks[cat];
+            return `${cat}: ${p?.name || ''} - ${currency(p?.price || 0)}`;
+          });
+          chatBox.innerHTML += `<div class="text-muted">AI: Suggested build for ${data.useCase} around ${currency(data.budget)}.</div>`;
+          document.getElementById('cartPreview').innerHTML = lines.join('<br>') + `<br><strong>Total: ${currency(data.total || 0)}</strong>`;
+          document.getElementById('addBuildBtn').disabled = false;
+        }catch(e){
+          const loading = document.getElementById('aiLoading');
+          if (loading) loading.remove();
+          chatBox.innerHTML += `<div class="text-danger">AI: Failed to generate build.</div>`;
+        } finally {
+          sendBtn.disabled = false;
+        }
+      }
+
+      // Voice input using Web Speech API
+      (function setupVoice(){
+        const voiceBtn = document.getElementById('voiceBtn');
+        const input = document.getElementById('userInput');
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if(!SR){
+          voiceBtn.disabled = true;
+          voiceBtn.title = 'Voice not supported';
+          return;
+        }
+        const rec = new SR();
+        rec.lang = 'en-US';
+        rec.interimResults = false;
+        rec.maxAlternatives = 1;
+        voiceBtn.addEventListener('click', () => {
+          rec.start();
+          voiceBtn.classList.add('active');
+        });
+        rec.onresult = (e) => {
+          const text = e.results[0][0].transcript;
+          input.value = text;
+          voiceBtn.classList.remove('active');
+        };
+        rec.onend = () => voiceBtn.classList.remove('active');
+        rec.onerror = () => voiceBtn.classList.remove('active');
+      })();
+
+      document.getElementById('addBuildBtn').addEventListener('click', async () => {
+        if(!currentSessionId) return;
+        try{
+          await fetch(`${API_BASE}/api/ai/add-build-to-cart`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId: currentSessionId, userId: DEMO_USER_ID })
+          });
+          alert('Build added to cart');
+        }catch(e){
+          alert('Failed to add build to cart');
+        }
+      });
+
+      loadConversation();
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

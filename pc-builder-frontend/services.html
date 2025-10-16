@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Services - PC Builder</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body class="bg-black text-warning">
+    <!-- Navbar -->
+    <nav
+      class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-warning"
+    >
+      <div class="container">
+        <a class="navbar-brand text-warning fw-bold" href="index.html"
+          >PC Builder</a
+        >
+        <button
+          class="navbar-toggler"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link text-warning" href="index.html">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-warning" href="products.html">Products</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-warning" href="build-pc.html">Build PC</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-warning" href="ai-build.html">AI Build</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-warning active" href="services.html"
+                >Services</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-warning" href="orders.html">Orders</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-warning" href="cart.html">Cart</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Services Section -->
+    <section class="container py-5">
+      <h2 class="text-center mb-4">Our Services</h2>
+      <div class="row text-center" id="servicesGrid"></div>
+
+      <!-- Service Booking Form -->
+      <h4 class="mt-5">Book a Service</h4>
+      <form id="bookingForm" class="border border-warning rounded p-3" style="display:none">
+        <input
+          type="text"
+          class="form-control mb-3 text-black"
+          placeholder="Your Name"
+        />
+        <input
+          type="email"
+          class="form-control mb-3 text-black"
+          placeholder="Your Email"
+        />
+        <select id="serviceSelect" class="form-select mb-3 text-black"></select>
+        <textarea
+          class="form-control mb-3 text-black"
+          rows="3"
+          placeholder="Describe your request"
+        ></textarea>
+        <button
+          type="submit"
+          class="btn btn-warning text-black w-100 fw-semibold"
+        >
+          Submit
+        </button>
+      </form>
+    </section>
+
+    <!-- Footer -->
+    <footer
+      class="bg-dark text-warning text-center py-3 border-top border-warning"
+    >
+      &copy; 2025 PC Builder. All Rights Reserved.
+    </footer>
+
+    <script>
+      const API_BASE = 'http://localhost:5001';
+      const DEMO_USER_ID = 1;
+      let SERVICES_CACHE = [];
+
+      function currency(val){ return `₹${Math.round(val).toLocaleString('en-IN')}`; }
+
+      function serviceCard(s){
+        return `
+          <div class="col-md-4 mb-3">
+            <div class="card bg-dark border-warning p-4 text-warning h-100 d-flex">
+              <div class="fw-bold">${s.service_name}</div>
+              <div class="small text-muted">${s.category}</div>
+              <div class="mt-2 flex-grow-1">${s.description || ''}</div>
+              <div class="d-flex justify-content-between align-items-center mt-3">
+                <div><strong>${currency(s.base_price)}</strong> · ${s.estimated_time || ''}</div>
+                <button class="btn btn-sm btn-warning text-black" onclick="selectService(${s.id})">Book Service</button>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      async function loadServices(){
+        const grid = document.getElementById('servicesGrid');
+        const select = document.getElementById('serviceSelect');
+        grid.innerHTML = '<div class="text-center">Loading...</div>';
+        select.innerHTML = '<option value="">Select Service</option>';
+        try{
+          const res = await fetch(`${API_BASE}/api/services`);
+          const services = await res.json();
+          SERVICES_CACHE = services;
+          grid.innerHTML = services.map(serviceCard).join('');
+          for(const s of services){
+            const opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = `${s.service_name} (${currency(s.base_price)})`;
+            select.appendChild(opt);
+          }
+        }catch(e){
+          grid.innerHTML = '<div class="text-danger">Failed to load services.</div>';
+        }
+      }
+
+      function selectService(id){
+        const form = document.getElementById('bookingForm');
+        const select = document.getElementById('serviceSelect');
+        select.value = String(id);
+        form.style.display = '';
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const select = document.getElementById('serviceSelect');
+        const serviceId = parseInt(select.value, 10);
+        if(!serviceId){ alert('Please select a service'); return; }
+        try{
+          await fetch(`${API_BASE}/api/services/book`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: DEMO_USER_ID, serviceId, scheduled_date: new Date(), device_details: { note: 'Website booking' } })
+          });
+          const svc = SERVICES_CACHE.find(s => s.id === serviceId);
+          if (svc && (svc.category === 'assembly' || /assembly/i.test(svc.service_name))) {
+            localStorage.setItem('assemblyPreferred', 'true');
+          }
+          alert('Service booked');
+        }catch(e){
+          alert('Failed to book service');
+        }
+      });
+
+      loadServices();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

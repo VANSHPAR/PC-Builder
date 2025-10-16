@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Product - PC Builder</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body class="bg-black text-warning">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand text-warning" href="index.html">PC Builder</a>
+        <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link text-warning" href="products.html">Products</a></li>
+            <li class="nav-item"><a class="nav-link text-warning" href="build-pc.html">Build PC</a></li>
+            <li class="nav-item"><a class="nav-link text-warning" href="ai-build.html">AI Build</a></li>
+            <li class="nav-item"><a class="nav-link text-warning" href="services.html">Services</a></li>
+            <li class="nav-item"><a class="nav-link text-warning" href="orders.html">Orders</a></li>
+            <li class="nav-item"><a class="nav-link text-warning" href="cart.html">Cart</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <section class="container py-5">
+      <div id="content" class="row g-4">
+        <div class="col-md-6">
+          <img id="pimg" class="img-fluid border border-warning rounded" alt="Product image" />
+        </div>
+        <div class="col-md-6">
+          <h3 id="pname"></h3>
+          <div class="text-muted mb-2" id="pmeta"></div>
+          <h4 class="mb-3">Price: <span id="pprice"></span></h4>
+          <p id="pdesc" class="mb-3"></p>
+          <div id="pspecs" class="mb-3"></div>
+          <button id="addBtn" class="btn btn-warning text-black">Add to Cart</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="bg-dark text-warning text-center py-3 border-top border-warning">&copy; 2025 PC Builder. All Rights Reserved.</footer>
+
+    <script>
+      const API_BASE = 'http://localhost:5001';
+      const DEMO_USER_ID = 1;
+
+      function currency(val){ return `₹${Math.round(val).toLocaleString('en-IN')}`; }
+      function getParam(name){ return new URLSearchParams(location.search).get(name); }
+
+      async function loadProduct(){
+        const id = getParam('id');
+        if(!id){ document.getElementById('content').innerHTML = '<div class="text-danger">No product selected.</div>'; return; }
+        try{
+          const res = await fetch(`${API_BASE}/api/products/${id}`);
+          if(!res.ok) throw new Error('Not found');
+          const p = await res.json();
+          document.getElementById('pimg').src = p.image_url || 'https://via.placeholder.com/600x400.png?text=Product';
+          document.getElementById('pname').textContent = p.name;
+          document.getElementById('pmeta').textContent = `${p.brand || ''} • ${p.category}`;
+          document.getElementById('pprice').textContent = currency(p.price);
+          document.getElementById('pdesc').textContent = p.description || '';
+          const specs = p.specifications || {};
+          const specHtml = Object.keys(specs).length
+            ? '<ul class="list-group">' + Object.entries(specs).map(([k,v])=>`<li class="list-group-item bg-dark text-warning d-flex justify-content-between"><span>${k}</span><span>${v}</span></li>`).join('') + '</ul>'
+            : '<div class="text-muted">No specifications</div>';
+          document.getElementById('pspecs').innerHTML = specHtml;
+          document.getElementById('addBtn').onclick = async () => {
+            try{
+              await fetch(`${API_BASE}/api/cart/add`,{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ userId: DEMO_USER_ID, productId: p.id, quantity: 1 })});
+              alert('Added to cart');
+            }catch{ alert('Failed to add to cart'); }
+          };
+        }catch(e){
+          document.getElementById('content').innerHTML = '<div class="text-danger">Failed to load product.</div>';
+        }
+      }
+
+      loadProduct();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout - PC Builder</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      footer {
+        margin-top: auto;
+      }
+    </style>
+  </head>
+  <body class="bg-black text-warning">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand text-warning" href="index.html">PC Builder</a>
+        <button
+          class="navbar-toggler"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link text-warning" href="products.html">Products</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-warning" href="build-pc.html">Build PC</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-warning" href="ai-build.html">AI Build</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-warning" href="services.html">Services</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-warning" href="orders.html">Orders</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-warning" href="cart.html">Cart</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Checkout Section -->
+    <section class="container py-5">
+      <h2 class="text-center mb-4">Checkout</h2>
+
+      <div class="row g-4">
+        <!-- Billing Details -->
+        <div class="col-md-6">
+          <div class="border border-warning rounded p-4">
+            <h4 class="mb-3 text-warning">Billing Details</h4>
+            <form>
+              <input
+                type="text"
+                class="form-control mb-3 text-black"
+                placeholder="Full Name"
+                required
+              />
+              <input
+                type="email"
+                class="form-control mb-3 text-black"
+                placeholder="Email"
+                required
+              />
+              <input
+                type="text"
+                id="addressInput"
+                class="form-control mb-3 text-black"
+                placeholder="Address"
+                required
+              />
+              <input
+                type="text"
+                class="form-control mb-3 text-black"
+                placeholder="City"
+                required
+              />
+              <input
+                type="text"
+                class="form-control mb-3 text-black"
+                placeholder="ZIP Code"
+                required
+              />
+            </form>
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-md-6">
+          <div class="border border-warning rounded p-4">
+            <h4 class="mb-3 text-warning">Order Summary</h4>
+            <ul id="orderList" class="list-group mb-3"></ul>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="assemblyChk" />
+                <label class="form-check-label" for="assemblyChk">Include Assembly (₹5000)</label>
+              </div>
+              <div class="fw-bold">Total: <span id="orderTotal">₹0</span></div>
+            </div>
+
+            <button id="placeOrderBtn" class="btn btn-warning text-black w-100" type="button">Place Order</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer
+      class="bg-dark text-warning text-center py-3 border-top border-warning"
+    >
+      &copy; 2025 PC Builder. All Rights Reserved.
+    </footer>
+
+    <script>
+      const API_BASE = 'http://localhost:5001';
+      const DEMO_USER_ID = 1;
+
+      function currency(val){ return `₹${Math.round(val).toLocaleString('en-IN')}`; }
+
+      async function loadSummary(){
+        const list = document.getElementById('orderList');
+        const totalEl = document.getElementById('orderTotal');
+        list.innerHTML = '<li class="list-group-item bg-dark text-warning text-center">Loading...</li>';
+        try{
+          const res = await fetch(`${API_BASE}/api/cart/${DEMO_USER_ID}`);
+          const data = await res.json();
+          if(!data.items || data.items.length === 0){
+            list.innerHTML = '<li class="list-group-item bg-dark text-warning text-center">Your cart is empty.</li>';
+            totalEl.textContent = currency(0);
+            return;
+          }
+          list.innerHTML = data.items.map(it => `
+            <li class="list-group-item bg-dark text-warning d-flex justify-content-between">
+              <span>${it.Product?.name || 'Item'} x ${it.quantity}</span>
+              <span>${currency((it.Product?.price||0) * it.quantity)}</span>
+            </li>
+          `).join('');
+          let total = data.total || 0;
+          if(document.getElementById('assemblyChk').checked) total += 5000;
+          totalEl.textContent = currency(total);
+        }catch(e){
+          list.innerHTML = '<li class="list-group-item bg-dark text-danger text-center">Failed to load cart.</li>';
+        }
+      }
+
+      document.getElementById('assemblyChk').addEventListener('change', loadSummary);
+      document.getElementById('placeOrderBtn').addEventListener('click', async () => {
+        const address = document.getElementById('addressInput').value.trim();
+        const assembly = document.getElementById('assemblyChk').checked;
+        if(!address){ alert('Please enter address'); return; }
+        try{
+          const res = await fetch(`${API_BASE}/api/orders/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: DEMO_USER_ID, assembly_service: assembly, shipping_address: address })
+          });
+          if(!res.ok){ throw new Error('Order failed'); }
+          alert('Order placed!');
+          window.location.href = 'orders.html';
+        }catch(e){
+          alert('Failed to place order');
+        }
+      });
+
+      loadSummary();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

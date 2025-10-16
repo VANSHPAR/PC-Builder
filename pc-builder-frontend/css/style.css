@@ -1,0 +1,47 @@
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 10px yellow;
+}
+
+.chat-box {
+    height: 400px;
+    overflow-y: auto;
+    background-color: #111;
+}
+
+footer {
+    position: relative;
+    bottom: 0;
+    width: 100%;
+}
+header img {
+  max-height: 400px;
+  object-fit: contain;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  header img {
+    max-height: 250px;
+  }
+}
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+footer {
+  margin-top: auto;
+}

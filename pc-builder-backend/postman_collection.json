@@ -1,0 +1,123 @@
+{
+  "info": {
+    "name": "PC Builder Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": { "method": "GET", "url": "http://localhost:5000/api/health" }
+    },
+    {
+      "name": "Products: List",
+      "request": { "method": "GET", "url": "http://localhost:5000/api/products" }
+    },
+    {
+      "name": "Products: By Category",
+      "request": { "method": "GET", "url": "http://localhost:5000/api/products/category/CPU" }
+    },
+    {
+      "name": "Products: Detail",
+      "request": { "method": "GET", "url": "http://localhost:5000/api/products/1" }
+    },
+    {
+      "name": "Products: Compatibility",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"parts\": [\n    { \"category\": \"CPU\", \"compatibility_tags\": { \"socket_type\": \"LGA1700\" } },\n    { \"category\": \"Motherboard\", \"compatibility_tags\": { \"socket_type\": \"LGA1700\", \"memory_type\": \"DDR4\", \"form_factor\": \"ATX\" } }\n  ]\n}"
+        },
+        "url": "http://localhost:5000/api/products/compatibility"
+      }
+    },
+    {
+      "name": "Cart: Add",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"userId\": 1,\n  \"productId\": 1,\n  \"quantity\": 1\n}" },
+        "url": "http://localhost:5000/api/cart/add"
+      }
+    },
+    {
+      "name": "Cart: Get",
+      "request": { "method": "GET", "url": "http://localhost:5000/api/cart/1" }
+    },
+    {
+      "name": "Cart: Update",
+      "request": {
+        "method": "PUT",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"userId\": 1,\n  \"itemId\": 1,\n  \"quantity\": 2\n}" },
+        "url": "http://localhost:5000/api/cart/update"
+      }
+    },
+    {
+      "name": "Cart: Remove",
+      "request": { "method": "DELETE", "url": "http://localhost:5000/api/cart/remove/1?userId=1" }
+    },
+    {
+      "name": "Orders: Create",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"userId\": 1,\n  \"assembly_service\": true,\n  \"shipping_address\": \"123 Demo Street\"\n}" },
+        "url": "http://localhost:5000/api/orders/create"
+      }
+    },
+    {
+      "name": "Orders: By User",
+      "request": { "method": "GET", "url": "http://localhost:5000/api/orders/1" }
+    },
+    {
+      "name": "Orders: Detail",
+      "request": { "method": "GET", "url": "http://localhost:5000/api/orders/detail/1" }
+    },
+    {
+      "name": "Orders: Update Status",
+      "request": {
+        "method": "PUT",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"status\": \"confirmed\",\n  \"payment_status\": \"paid\"\n}" },
+        "url": "http://localhost:5000/api/orders/1/status"
+      }
+    },
+    {
+      "name": "Services: List",
+      "request": { "method": "GET", "url": "http://localhost:5000/api/services" }
+    },
+    {
+      "name": "Services: Book",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"userId\": 1,\n  \"serviceId\": 1,\n  \"scheduled_date\": \"2025-11-01\",\n  \"device_details\": { \"issue\": \"No display\" }\n}" },
+        "url": "http://localhost:5000/api/services/book"
+      }
+    },
+    {
+      "name": "Services: Bookings",
+      "request": { "method": "GET", "url": "http://localhost:5000/api/services/bookings/1" }
+    },
+    {
+      "name": "AI: Chat",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"message\": \"I need a gaming PC under $1000\"\n}" },
+        "url": "http://localhost:5000/api/ai/chat"
+      }
+    },
+    {
+      "name": "AI: Build PC",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"message\": \"Build me a gaming PC for Rs 80000\"\n}" },
+        "url": "http://localhost:5000/api/ai/build-pc"
+      }
+    }
+  ]
+}
