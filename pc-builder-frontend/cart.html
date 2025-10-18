@@ -92,7 +92,7 @@
 
     <script>
       const API_BASE = 'http://localhost:5001';
-      const DEMO_USER_ID = 1;
+      const DEMO_USER_ID = 3;
 
       function currency(val){ return `₹${Math.round(val).toLocaleString('en-IN')}`; }
 
@@ -112,7 +112,7 @@
             <div class="d-flex justify-content-between align-items-center mb-2">
               <div>
                 <strong>${it.Product?.name || 'Item'}</strong>
-                <div class="small text-muted">Qty: ${it.quantity}</div>
+                <div class="small text-secondary">Qty: ${it.quantity}</div>
               </div>
               <div>${currency((it.Product?.price||0) * it.quantity)}</div>
             </div>

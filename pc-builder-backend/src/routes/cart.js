@@ -4,7 +4,7 @@ import { CartItem, Product, User } from '../models/index.js';
 const router = Router();
 
 // POST /api/cart/add { userId, productId, quantity }
-router.post('/add', async (req, res) => {
+router.post('add', async (req, res) => {
   try {
     const { userId, productId, quantity = 1 } = req.body;
     if (!userId || !productId) return res.status(400).json({ error: 'userId and productId required' });

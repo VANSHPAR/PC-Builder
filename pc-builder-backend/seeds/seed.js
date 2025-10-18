@@ -219,6 +219,20 @@ async function seed() {
   ];
   await Service.bulkCreate(services);
 
+  // Mirror each service as a purchasable product line so it can be added to cart
+  const serviceProducts = services.map(s => ({
+    name: `${s.service_name}`,
+    category: 'Service',
+    brand: 'Service',
+    price: s.base_price,
+    stock_quantity: 9999,
+    specifications: {},
+    image_url: imgUrl('Service', s.service_name),
+    description: s.description,
+    compatibility_tags: {},
+  }));
+  await Product.bulkCreate(serviceProducts);
+
   console.log('Seed complete. Demo user id:', demoUser.id);
   await sequelize.close();
 }

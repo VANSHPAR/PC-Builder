@@ -98,7 +98,7 @@
 
     <script>
       const API_BASE = 'http://localhost:5001';
-      const DEMO_USER_ID = 1;
+      const DEMO_USER_ID = 3;
       let SERVICES_CACHE = [];
 
       function currency(val){ return `₹${Math.round(val).toLocaleString('en-IN')}`; }
@@ -108,7 +108,7 @@
           <div class="col-md-4 mb-3">
             <div class="card bg-dark border-warning p-4 text-warning h-100 d-flex">
               <div class="fw-bold">${s.service_name}</div>
-              <div class="small text-muted">${s.category}</div>
+              <div class="small">${s.category}</div>
               <div class="mt-2 flex-grow-1">${s.description || ''}</div>
               <div class="d-flex justify-content-between align-items-center mt-3">
                 <div><strong>${currency(s.base_price)}</strong> · ${s.estimated_time || ''}</div>

@@ -8,6 +8,7 @@ import cartRouter from './routes/cart.js';
 import ordersRouter from './routes/orders.js';
 import servicesRouter from './routes/services.js';
 import aiRouter from './routes/ai.js';
+import usersRouter from './routes/users.js';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use('/api/cart', cartRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/services', servicesRouter);
 app.use('/api/ai', aiRouter);
+app.use('/api/users', usersRouter);
 
 const PORT = process.env.PORT || 5000;
 
