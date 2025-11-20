@@ -85,7 +85,7 @@
       const API_BASE = 'http://localhost:5001';
       const DEMO_USER_ID = 3;
 
-      function currency(val){ return `₹${Math.round(val).toLocaleString('en-IN')}`; }
+      function currency(val){ return `$${Math.round(val).toLocaleString('en-IN')}`; }
 
       async function loadOrders(){
         const body = document.getElementById('ordersBody');

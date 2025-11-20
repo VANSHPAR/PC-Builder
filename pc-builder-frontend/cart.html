@@ -62,7 +62,7 @@
       <div class="border border-warning rounded p-4">
         <div id="cartItems"></div>
         <hr />
-        <p><strong>Total: <span id="cartTotal">₹0</span></strong></p>
+        <p><strong>Total: <span id="cartTotal">$0</span></strong></p>
         <div class="form-check mb-3">
           <input
             class="form-check-input"
@@ -71,7 +71,7 @@
             value="5000"
           />
           <label class="form-check-label" for="assembly">
-            Include Assembly (₹5000)
+            Include Assembly ($5000)
           </label>
         </div>
         <a
@@ -94,7 +94,7 @@
       const API_BASE = 'http://localhost:5001';
       const DEMO_USER_ID = 3;
 
-      function currency(val){ return `₹${Math.round(val).toLocaleString('en-IN')}`; }
+      function currency(val){ return `$${Math.round(val).toLocaleString('en-IN')}`; }
 
       async function loadCart(){
         const itemsEl = document.getElementById('cartItems');

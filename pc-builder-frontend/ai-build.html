@@ -93,7 +93,7 @@
       let currentSessionId = localStorage.getItem('ai_session_id') || null;
       let currentBuild = null;
 
-      function currency(val){ return `₹${Math.round(val).toLocaleString('en-IN')}`; }
+      function currency(val){ return `$${Math.round(val).toLocaleString('en-IN')}`; }
 
       async function loadConversation(){
         if(!currentSessionId) return;

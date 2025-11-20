@@ -76,7 +76,7 @@
 
             <div class="form-check mb-3">
               <input class="form-check-input" type="checkbox" id="assemblyCheck" value="5000" />
-              <label class="form-check-label" for="assemblyCheck">Include Assembly Service (₹5000)</label>
+              <label class="form-check-label" for="assemblyCheck">Include Assembly Service ($5000)</label>
             </div>
 
             <button type="button" class="btn btn-warning text-black" id="addAllBtn">Add Selected Parts to Cart</button>
@@ -87,7 +87,7 @@
             <h4>Selected Parts Summary</h4>
             <div id="summary">No parts selected yet.</div>
             <div id="compat" class="mt-2 small"></div>
-            <h5 id="totalPrice">Total Price: ₹0</h5>
+            <h5 id="totalPrice">Total Price: $0</h5>
           </div>
         </div>
       </div>
@@ -104,7 +104,7 @@
       const API_BASE = 'http://localhost:5001';
       const DEMO_USER_ID = 3;
 
-      function currency(val){ return `₹${Math.round(val).toLocaleString('en-IN')}`; }
+      function currency(val){ return `$${Math.round(val).toLocaleString('en-IN')}`; }
 
       async function loadCategory(cat){
         const res = await fetch(`${API_BASE}/api/products?category=${encodeURIComponent(cat)}`);
